@@ -1,0 +1,41 @@
+CC=gcc
+CFLAGS=-Wall -Werror -Wextra -fPIC
+INC=-I../data_libs -I../yet_another_decision_module -I../data_module
+
+all: ../../build/Quest_3
+
+../../build/Quest_3: main_executable_module.o data_io.o data_stat.o data_process.o decision.o
+	$(CC) $(CCFLAGS) -o $@ $^
+
+main_executable_module.o: main_executable_module.c
+	$(CC) $(CFLAGS) -c $< -o $@ $(INC)
+
+data_io.o: ../data_libs/data_io.c ../data_libs/data_io.h
+	$(CC) $(CFLAGS) -c $< -o $@ $(INC)
+
+data_stat.o: ../data_libs/data_stat.c ../data_libs/data_stat.h
+	$(CC) $(CFLAGS) -c $< -o $@ $(INC)
+
+data_process.o: ../data_module/data_process.c ../data_module/data_process.h
+	$(CC) $(CFLAGS) -c $< -o $@ $(INC)
+
+decision.o: ../yet_another_decision_module/decision.c ../yet_another_decision_module/decision.h
+	$(CC) $(CFLAGS) -c $< -o $@ $(INC)
+
+data_stat.a: data_stat.o
+	ar rcs $@ $<
+
+build_with_static: data_stat.a main_executable_module.o data_io.o data_process.o decision.o
+	$(CC) $(CFLAGS) -o ../../build/Quest_5 $^
+
+data_process.so: data_process.o data_stat.a
+	$(CC) $(CFLAGS) -shared -o $@ $^ $(INC)
+
+build_with_dynamic: main_executable_module.o data_io.o data_stat.o data_process.so decision.o
+	$(CC) $(CFLAGS) -o ../../build/Quest_6 $^ $(INC)
+	cp data_process.so ../../build
+
+rebuild: clean ../../build/Quest_3
+
+clean:
+	rm -rf *.o *.a *.so ../../build/Quest_* ../../build/*.so
